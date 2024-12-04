@@ -10,11 +10,19 @@ export default async function handler(req, res) {
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Создаём пользователя с isAdmin: false по умолчанию
     await prisma.user.create({
-      data: { name, email, password: hashedPassword },
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+        isAdmin: false,
+      },
     });
+
     res.status(201).json({ message: "User created" });
-  } catch (err) {  
+  } catch (err) {
     console.error("Error creating user:", err); // Лог ошибки в консоль
     res.status(500).json({ error: err.message }); // Передача подробностей ошибки клиенту
   }
