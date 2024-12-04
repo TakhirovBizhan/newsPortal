@@ -14,7 +14,8 @@ export default async function handler(req, res) {
       data: { name, email, password: hashedPassword },
     });
     res.status(201).json({ message: "User created" });
-  } catch (err) {
-    res.status(500).json({ error: "Something went wrong" });
+  } catch (err) {  
+    console.error("Error creating user:", err); // Лог ошибки в консоль
+    res.status(500).json({ error: err.message }); // Передача подробностей ошибки клиенту
   }
 }
