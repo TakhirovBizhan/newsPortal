@@ -1,25 +1,33 @@
 "use client";
 
-import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
+import { useSession, signOut } from "next-auth/react";
 
 export default function Navbar() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
+
+  // Проверяем, загружается ли сессия
+  if (status === "loading") {
+    return <nav>Загрузка...</nav>;
+  }
 
   return (
     <nav>
       <ul>
         <li>
-          <Link href="/">Home</Link>
+          <Link href="/">Главная</Link>
         </li>
         {session ? (
           <>
             <li>
               <p>Привет, {session.user.isAdmin ? "админ" : "пользователь"}!</p>
             </li>
+            <li>
+              <Link href="/news">Новости</Link>
+            </li>
             {session.user.isAdmin && (
               <li>
-                <Link href="/news">Управление новостями</Link>
+                <Link href="/admin">Админ-панель</Link>
               </li>
             )}
             <li>
@@ -32,7 +40,7 @@ export default function Navbar() {
               <Link href="/login">Войти</Link>
             </li>
             <li>
-              <Link href="/register">Зарегестрироваться</Link>
+              <Link href="/register">Регистрация</Link>
             </li>
           </>
         )}

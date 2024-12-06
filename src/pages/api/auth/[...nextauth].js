@@ -5,6 +5,7 @@ import prisma from "../../../prisma/client";
 import bcrypt from "bcryptjs";
 
 export default NextAuth({
+  adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -17,26 +18,42 @@ export default NextAuth({
           where: { email: credentials.email },
         });
 
-        if (!user || !(await bcrypt.compare(credentials.password, user.password))) {
-          throw new Error("Invalid credentials");
+        if (!user) {
+          throw new Error("Пользователь не найден");
         }
-        return user; // Возвращаем объект пользователя
+
+        const isValidPassword = await bcrypt.compare(
+          credentials.password,
+          user.password
+        );
+
+        if (!isValidPassword) {
+          throw new Error("Неверный пароль");
+        }
+
+        return { id: user.id, name: user.name, email: user.email, isAdmin: user.isAdmin };
       },
     }),
   ],
-  adapter: PrismaAdapter(prisma),
-  session: { strategy: "jwt" },
+  session: {
+    strategy: "jwt",
+  },
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.isAdmin = user.isAdmin; // Добавляем роль пользователя
+        token.isAdmin = user.isAdmin;
       }
       return token;
     },
     async session({ session, token }) {
-      session.user = { id: token.id, isAdmin: token.isAdmin }; // Передаем роль в сессию
+      session.user = {
+        id: token.id,
+        email: token.email,
+        isAdmin: token.isAdmin,
+      };
       return session;
     },
   },
+  secret: process.env.NEXTAUTH_SECRET,
 });

@@ -5,21 +5,21 @@ export async function middleware(request) {
   const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
   const { pathname } = request.nextUrl;
 
-  // Если пользователь не авторизован и пытается получить доступ к защищенным маршрутам
-  if (!token && pathname.startsWith("/admin")) {
-    return NextResponse.redirect(new URL("/auth/login", request.url));
+  // Если пользователь не авторизован, перенаправляем на страницу входа для защищённых маршрутов
+  if (!token && (pathname.startsWith("/admin") || pathname.startsWith("/news"))) {
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // Если пользователь авторизован, но не является модератором, перенаправить на главную страницу
+  // Если пользователь авторизован, но не является администратором, запрещаем доступ к /admin
   if (token && !token.isAdmin && pathname.startsWith("/admin")) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-  // Если пользователь авторизован, разрешить доступ
+  // Разрешить доступ ко всем остальным маршрутам
   return NextResponse.next();
 }
 
-// Указываем, какие маршруты обрабатываются middleware
+// Указываем маршруты, которые обрабатываются middleware
 export const config = {
-  matcher: ["/admin/:path*"], // Применяем middleware только к маршрутам, начинающимся с /admin
+  matcher: ["/admin/:path*", "/news/:path*"],
 };

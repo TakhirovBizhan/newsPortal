@@ -21,9 +21,9 @@ export default async function handler(req, res) {
       },
     });
 
-    res.status(201).json({ message: "User created" });
+    return res.status(201).json({ message: "User created", redirect: "/" });
   } catch (err) {
     console.error("Error creating user:", err); // Лог ошибки в консоль
-    res.status(500).json({ error: err.message }); // Передача подробностей ошибки клиенту
+    return res.status(500).json({ error: err.message }); // Передача подробностей ошибки клиенту
   }
 }
