@@ -1,16 +1,33 @@
 "use client";
-
+import NewsItem from '../../components/newsItem'
 import { useEffect, useState } from "react";
 
 export default function NewsPage() {
   const [newsList, setNewsList] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetch("/api/news")
-      .then((response) => response.json())
-      .then((data) => setNewsList(data))
-      .catch((error) => console.error("Ошибка загрузки новостей", error));
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Ошибка загрузки новостей");
+        }
+        return response.json();
+      })
+      .then((data) => {
+        setNewsList(data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error(error);
+        setError(error.message);
+        setLoading(false);
+      });
   }, []);
+
+  if (loading) return <p>Загрузка...</p>;
+  if (error) return <p>{error}</p>;
 
   return (
     <div>
@@ -25,47 +42,5 @@ export default function NewsPage() {
         </ul>
       )}
     </div>
-  );
-}
-
-function NewsItem({ news }) {
-  const [comment, setComment] = useState("");
-
-  const handleCommentSubmit = async (event) => {
-    event.preventDefault();
-
-    const commentData = {
-      content: comment,
-      newsId: news.id,
-    };
-
-    const response = await fetch("/api/comments/create", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(commentData),
-    });
-
-    if (response.ok) {
-      alert("Комментарий отправлен на модерацию.");
-      setComment(""); // Очистить поле комментария
-    } else {
-      alert("Ошибка при добавлении комментария.");
-    }
-  };
-
-  return (
-    <li>
-      <h2>{news.title}</h2>
-      <p>{news.content}</p>
-      <form onSubmit={handleCommentSubmit}>
-        <textarea
-          value={comment}
-          onChange={(e) => setComment(e.target.value)}
-          placeholder="Ваш комментарий..."
-          required
-        />
-        <button type="submit">Отправить</button>
-      </form>
-    </li>
   );
 }

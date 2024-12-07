@@ -1,10 +1,10 @@
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import prisma from "../../../prisma/client";
+import prisma from "../../../../prisma/client";
 import bcrypt from "bcryptjs";
 
-export default NextAuth({
+const authOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
@@ -31,7 +31,12 @@ export default NextAuth({
           throw new Error("Неверный пароль");
         }
 
-        return { id: user.id, name: user.name, email: user.email, isAdmin: user.isAdmin };
+        return {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          isAdmin: user.isAdmin,
+        };
       },
     }),
   ],
@@ -56,4 +61,8 @@ export default NextAuth({
     },
   },
   secret: process.env.NEXTAUTH_SECRET,
-});
+};
+
+const handler = NextAuth(authOptions);
+
+export { handler as GET, handler as POST };

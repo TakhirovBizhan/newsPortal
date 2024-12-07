@@ -7,7 +7,16 @@ export default function LoginPage() {
     e.preventDefault();
     const email = e.target.email.value;
     const password = e.target.password.value;
-    await signIn("credentials", { email, password, callbackUrl: "/" });
+
+    const result = await signIn("credentials", {
+      email,
+      password,
+      callbackUrl: "/",
+    });
+
+    if (!result?.ok) {
+      alert("Ошибка входа. Проверьте логин и пароль.");
+    }
   };
 
   return (
